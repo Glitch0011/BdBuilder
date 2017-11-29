@@ -17,7 +17,7 @@ Becomes `Example.feature.cs`:
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-namespace TflApi_Tests
+namespace Tests
 {
 	[TestClass]
 	public class Example
