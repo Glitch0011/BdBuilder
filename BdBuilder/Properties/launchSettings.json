@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BdBuilder": {
+      "commandName": "Project",
+      "commandLineArgs": "\"c:\\users\\tom\\documents\\visual studio 2017\\Projects\\BdBuilder\\BdBuilder.Test\" \"BdBuilder.Test\""
+    }
+  }
+}

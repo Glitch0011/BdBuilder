@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<BdBuilderFileExe Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' OR '$(TargetFrameworkIdentifier)' == '.NETStandard'">dotnet &quot;$(MSBuildThisFileDirectory)../lib/netcoreapp2.0/dotnet-bdbuilder.dll&quot; &quot;$(ProjectDir)&quot;</BdBuilderFileExe>
+		<QuoteRootNamespace>$(RootNameSpace)</QuoteRootNamespace>
+	</PropertyGroup>
+
+	<Target Name="GenerateTypescript" AfterTargets="CoreCompile">	
+		<Exec Command='$(BdBuilderFileExe) "$(QuoteRootNamespace)"' />
+	</Target>
+</Project>

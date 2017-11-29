@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Target Name="MyNuGetCustomTarget" AfterTargets="Build">
+		<Message Importance="high" Text="Message from MyNuGetCustomTarget. Configuration: $(Configuration)" />
+	</Target>
+
+	<PropertyGroup>
+
+		<OutputType>Exe</OutputType>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+
+		<AssemblyName>dotnet-bdbuilder</AssemblyName>
+
+		<PackageId>bdbuilder</PackageId>
+		<Version>0.1.53</Version>
+		<Authors>Tom Bonner</Authors>
+		<Title>BdBuilder</Title>
+		<Description>Converts .feature files to tests</Description>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>First release</PackageReleaseNotes>
+		<Copyright>Copyright 2017 (c) Tom Bonner. All rights reserved.</Copyright>
+		<PackageTags>BDD</PackageTags>
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<RootNamespace>BdBuilder</RootNamespace>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="build\**\*" PackagePath="build" CopyToPublishDirectory="PreserveNewest" />
+		<Content Include="tools\**\*" PackagePath="tools" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build.Framework" Version="15.3.409">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+
+		<!--<PackageReference Include="Microsoft.CodeAnalysis" Version="2.6.0-beta3" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="2.6.0-beta3" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.6.0-beta3" />-->
+	</ItemGroup>
+
+</Project>

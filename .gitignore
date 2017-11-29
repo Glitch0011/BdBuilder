@@ -1,0 +1,10 @@
+
+BdBuilder/bin/
+
+BdBuilder/obj/
+
+BdBuilder\.Test/bin/
+
+BdBuilder\.Test/obj/
+
+\.vs/
