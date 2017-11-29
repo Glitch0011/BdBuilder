@@ -44,4 +44,4 @@ Install-Package bdbuilder
 
 # Improvements
 
-There is a very long list of things to improve, if you'd like to feel free to help out.
+There is a very long list of things to improve, just say if you'd like to help.
