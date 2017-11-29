@@ -12,7 +12,7 @@
 		<AssemblyName>dotnet-bdbuilder</AssemblyName>
 
 		<PackageId>bdbuilder</PackageId>
-		<Version>0.1.53</Version>
+		<Version>0.1.54</Version>
 		<Authors>Tom Bonner</Authors>
 		<Title>BdBuilder</Title>
 		<Description>Converts .feature files to tests</Description>
@@ -21,6 +21,7 @@
 		<Copyright>Copyright 2017 (c) Tom Bonner. All rights reserved.</Copyright>
 		<PackageTags>BDD</PackageTags>
 		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<RepositoryUrl>https://github.com/Glitch0011/BdBuilder</RepositoryUrl>
 		<RootNamespace>BdBuilder</RootNamespace>
 
 	</PropertyGroup>
