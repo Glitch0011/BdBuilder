@@ -11,7 +11,7 @@
 		<AssemblyName>dotnet-bdbuilder</AssemblyName>
 
 		<PackageId>bdbuilder</PackageId>
-		<Version>0.1.98</Version>
+		<Version>0.1.112</Version>
 		<Authors>Tom Bonner</Authors>
 		<Title>BdBuilder</Title>
 		<Description>Converts .feature files to tests</Description>

@@ -19,10 +19,24 @@
     <FeatureFiles Include="**\*.feature" />
   </ItemGroup>
   
-  <Target Name="SayHello" AfterTargets="Build" 
+  <Target Name="SayHello" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild"
           Inputs="@(FeatureFiles)" Outputs="@(FeatureFiles->'%(FullPath).cs')">
-    
-    <SayHello FileName="%(FeatureFiles.FullPath)" />
+
+    <SayHello FileName="%(FeatureFiles.FullPath)" RootNameSpace="$(RootNameSpace)">
+      <Output TaskParameter="OutputFile" ItemName="OutputFile" />
+    </SayHello>
+
   </Target>
 
+  <ItemGroup>
+    <Content Include="**\*.feature" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.feature.cs" Condition=" '$(MSBuildRuntimeType)' != 'Core' " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvailableItemName Include="MyBuildAction" />
+  </ItemGroup>
 </Project>
