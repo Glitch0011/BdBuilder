@@ -6,26 +6,17 @@
 		<QuoteRootNamespace>$(RootNameSpace)</QuoteRootNamespace>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <FeatureFile Include="**\*.feature" />
-  </ItemGroup>
+  <PropertyGroup>
 
-  <Target Name="GenerateTypescript" AfterTargets="CoreCompile" Inputs="@(FeatureFile)" Outputs="@(FeatureFile->'%(Filename).cs'">
-    <Exec Command='$(BdBuilderFileExe) "$(QuoteRootNamespace)"'/>
+    <OurTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard1.6</OurTaskFolder>
+    <OurTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</OurTaskFolder>
+    <TaskAssembly>$(MSBuildThisFileDirectory)..\tasks\$(OurTaskFolder)\dotnet-bdbuilder.dll</TaskAssembly>
+  </PropertyGroup>
 
-    <Message Importance='high' Text='Created files'></Message>
-    <Message Importance='high' Text='@(FeatureFile)'></Message>
-
-    <ItemGroup>
-
-      <Compile Include="Test.feature.cs">
-        <AutoGen>true</AutoGen>
-      </Compile>
-    </ItemGroup>
-
+  <UsingTask TaskName="BdBuilder.SayHello" AssemblyFile="$(TaskAssembly)" />
+  
+  <Target Name="SayHello" AfterTargets="Build">
+    <SayHello />
   </Target>
 
-  <ItemGroup>
-    <Compile Include="*.feature.cs" />
-  </ItemGroup>
 </Project>
