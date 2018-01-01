@@ -14,9 +14,15 @@
   </PropertyGroup>
 
   <UsingTask TaskName="BdBuilder.SayHello" AssemblyFile="$(TaskAssembly)" />
+
+  <ItemGroup>
+    <FeatureFiles Include="**\*.feature" />
+  </ItemGroup>
   
-  <Target Name="SayHello" AfterTargets="Build">
-    <SayHello />
+  <Target Name="SayHello" AfterTargets="Build" 
+          Inputs="@(FeatureFiles)" Outputs="@(FeatureFiles->'%(FullPath).cs')">
+    
+    <SayHello FileName="%(FeatureFiles.FullPath)" />
   </Target>
 
 </Project>

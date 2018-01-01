@@ -7,7 +7,7 @@
   "targets": {
     ".NETStandard,Version=v1.6": {},
     ".NETStandard,Version=v1.6/": {
-      "dotnet-bdbuilder/0.1.90": {
+      "dotnet-bdbuilder/0.1.98": {
         "dependencies": {
           "Microsoft.Build.Framework": "15.3.409",
           "Microsoft.Build.Utilities.Core": "15.3.409",
@@ -1018,7 +1018,7 @@
     }
   },
   "libraries": {
-    "dotnet-bdbuilder/0.1.90": {
+    "dotnet-bdbuilder/0.1.98": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
