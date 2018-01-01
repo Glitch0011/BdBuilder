@@ -2,11 +2,30 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<PropertyGroup>
-		<BdBuilderFileExe Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' OR '$(TargetFrameworkIdentifier)' == '.NETStandard'">dotnet &quot;$(MSBuildThisFileDirectory)../lib/netcoreapp2.0/dotnet-bdbuilder.dll&quot; &quot;$(ProjectDir)&quot;</BdBuilderFileExe>
+		<BdBuilderFileExe>dotnet &quot;$(MSBuildThisFileDirectory)../lib/netcoreapp2.0/dotnet-bdbuilder.dll&quot; &quot;$(ProjectDir)&quot;</BdBuilderFileExe>
 		<QuoteRootNamespace>$(RootNameSpace)</QuoteRootNamespace>
 	</PropertyGroup>
 
-	<Target Name="GenerateTypescript" AfterTargets="CoreCompile">	
-		<Exec Command='$(BdBuilderFileExe) "$(QuoteRootNamespace)"' />
-	</Target>
+  <ItemGroup>
+    <FeatureFile Include="**\*.feature" />
+  </ItemGroup>
+
+  <Target Name="GenerateTypescript" AfterTargets="CoreCompile" Inputs="@(FeatureFile)" Outputs="@(FeatureFile->'%(Filename).cs'">
+    <Exec Command='$(BdBuilderFileExe) "$(QuoteRootNamespace)"'/>
+
+    <Message Importance='high' Text='Created files'></Message>
+    <Message Importance='high' Text='@(FeatureFile)'></Message>
+
+    <ItemGroup>
+
+      <Compile Include="Test.feature.cs">
+        <AutoGen>true</AutoGen>
+      </Compile>
+    </ItemGroup>
+
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="*.feature.cs" />
+  </ItemGroup>
 </Project>

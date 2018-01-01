@@ -14,6 +14,8 @@ namespace BdBuilder
 		{
 			args = args.SelectMany(i => i.Split('"').Select(j=>j.Trim())).ToArray();
 
+            Console.WriteLine(string.Join(" ", args));
+
 			var targetDirectory = new DirectoryInfo(args[0]);
 			var rootNameSpace = args[1];
 
