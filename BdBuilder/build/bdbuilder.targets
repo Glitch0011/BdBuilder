@@ -1,31 +1,45 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<BdBuilderFileExe>dotnet &quot;$(MSBuildThisFileDirectory)../lib/netcoreapp2.0/dotnet-bdbuilder.dll&quot; &quot;$(ProjectDir)&quot;</BdBuilderFileExe>
-		<QuoteRootNamespace>$(RootNameSpace)</QuoteRootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+
+    <OurTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard1.6</OurTaskFolder>
+    <OurTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</OurTaskFolder>
+    <TaskAssembly>$(MSBuildThisFileDirectory)..\tasks\$(OurTaskFolder)\dotnet-bdbuilder.dll</TaskAssembly>
+    
+  </PropertyGroup>
+
+  <UsingTask TaskName="BdBuilder.CompileFeatureFile" AssemblyFile="$(TaskAssembly)" />
 
   <ItemGroup>
-    <FeatureFile Include="**\*.feature" />
+    <FeatureFiles Include="**\*.feature" />
   </ItemGroup>
+  
+  <Target Name="SayHello" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild"
+          Inputs="@(FeatureFiles)" Outputs="@(FeatureFiles->'%(FullPath).cs')">
 
-  <Target Name="GenerateTypescript" AfterTargets="CoreCompile" Inputs="@(FeatureFile)" Outputs="@(FeatureFile->'%(Filename).cs'">
-    <Exec Command='$(BdBuilderFileExe) "$(QuoteRootNamespace)"'/>
-
-    <Message Importance='high' Text='Created files'></Message>
-    <Message Importance='high' Text='@(FeatureFile)'></Message>
-
-    <ItemGroup>
-
-      <Compile Include="Test.feature.cs">
-        <AutoGen>true</AutoGen>
-      </Compile>
-    </ItemGroup>
+    <CompileFeatureFile FileName="%(FeatureFiles.FullPath)" RootNameSpace="$(RootNameSpace)">
+      <Output TaskParameter="OutputFile" ItemName="OutputFile" />
+    </CompileFeatureFile>
 
   </Target>
 
+  <Target Name="CompileFeatureFiles" AfterTargets="SayHello" Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
+    
+    <Message Text="Compiling extra files"></Message>
+    
+    <ItemGroup>
+      <Compile Include="**\*.feature.cs"   />
+    </ItemGroup>
+    
+  </Target>
+  
   <ItemGroup>
-    <Compile Include="*.feature.cs" />
+    <Compile Remove="**\*.feature.cs" Condition=" '$(MSBuildRuntimeType)' != 'Core' " />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="**\*.feature" />
+  </ItemGroup>
+
 </Project>

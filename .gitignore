@@ -8,3 +8,5 @@ BdBuilder\.Test/bin/
 BdBuilder\.Test/obj/
 
 \.vs/
+
+BdBuilder/tasks/
