@@ -9,7 +9,7 @@
     
   </PropertyGroup>
 
-  <UsingTask TaskName="BdBuilder.SayHello" AssemblyFile="$(TaskAssembly)" />
+  <UsingTask TaskName="BdBuilder.CompileFeatureFile" AssemblyFile="$(TaskAssembly)" />
 
   <ItemGroup>
     <FeatureFiles Include="**\*.feature" />
@@ -18,9 +18,9 @@
   <Target Name="SayHello" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild"
           Inputs="@(FeatureFiles)" Outputs="@(FeatureFiles->'%(FullPath).cs')">
 
-    <SayHello FileName="%(FeatureFiles.FullPath)" RootNameSpace="$(RootNameSpace)">
+    <CompileFeatureFile FileName="%(FeatureFiles.FullPath)" RootNameSpace="$(RootNameSpace)">
       <Output TaskParameter="OutputFile" ItemName="OutputFile" />
-    </SayHello>
+    </CompileFeatureFile>
 
   </Target>
 
@@ -29,7 +29,7 @@
     <Message Text="Compiling extra files"></Message>
     
     <ItemGroup>
-      <Compile Include="**\*.feature.cs"  />
+      <Compile Include="**\*.feature.cs"   />
     </ItemGroup>
     
   </Target>

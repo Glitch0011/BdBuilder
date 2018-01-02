@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BdBuilder
 {
-    public class SayHello : Microsoft.Build.Utilities.Task
+    public class CompileFeatureFile : Microsoft.Build.Utilities.Task
     {
         [Microsoft.Build.Framework.Output]
         public string OutputFile { get; set; }
