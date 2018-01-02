@@ -28,15 +28,19 @@
 
   </Target>
 
+  <Target Name="CompileFeatureFiles" AfterTargets="SayHello" Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
+    <Message Text="Compiling extra files"></Message>
+    <ItemGroup>
+      <Compile Include="**\*.feature.cs"  />
+    </ItemGroup>
+  </Target>
+  
+  <ItemGroup>
+    <Compile Remove="**\*.feature.cs" Condition=" '$(MSBuildRuntimeType)' != 'Core' " />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="**\*.feature" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="**\*.feature.cs" Condition=" '$(MSBuildRuntimeType)' != 'Core' " />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvailableItemName Include="MyBuildAction" />
-  </ItemGroup>
 </Project>
