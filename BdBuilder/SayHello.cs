@@ -20,7 +20,7 @@ namespace BdBuilder
         {
             var fileInfo = new FileInfo(FileName);
 
-            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Does {fileInfo.Name} exist = {fileInfo.Exists}");
+            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"BdBuilder -> Compiling {fileInfo.Name} into {fileInfo.Name}.cs");
 
             OutputFile = Path.ChangeExtension(fileInfo.FullName, ".feature.cs");
 
