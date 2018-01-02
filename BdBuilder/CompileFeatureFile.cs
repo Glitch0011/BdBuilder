@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +10,15 @@ using System.Threading.Tasks;
 
 namespace BdBuilder
 {
+    public class Templates
+    {
+        public static string Code =>
+            @"	using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+				namespace Template {}
+			";
+    }
+
     public class CompileFeatureFile : Microsoft.Build.Utilities.Task
     {
         [Microsoft.Build.Framework.Output]
@@ -20,8 +32,15 @@ namespace BdBuilder
         {
             var fileInfo = new FileInfo(FileName);
 
-            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"BdBuilder -> Compiling {fileInfo.Name} into {fileInfo.Name}.cs");
-
+            try
+            {
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"BdBuilder -> Compiling {fileInfo.Name} into {fileInfo.Name}.cs");
+            }
+            catch (Exception)
+            {
+                
+            }
+               
             OutputFile = Path.ChangeExtension(fileInfo.FullName, ".feature.cs");
 
             System.Threading.Tasks.Task.Run(async () =>
@@ -41,16 +60,16 @@ namespace BdBuilder
 
             var count = 0;
             var args = new List<Tuple<string, string>>();
-            
+
             do
             {
                 matches = new Regex("['‘\"](.*?)['’\"]").Matches(line);
-                
+
                 if (matches.Count == 0)
                     break;
 
                 var firstGroup = matches[0];
-                
+
                 var val = firstGroup.Value;
 
                 var replacement = replacements[count % replacements.Count];
@@ -69,78 +88,141 @@ namespace BdBuilder
 
             return function;
         }
-        
+
         public async static Task TranspileFile(FileInfo info, string rootNameSpace)
         {
-            var text = info.ReadAllText().Split('\r');
-            var scenarios = new List<Tuple<string, List<string>>>();
+            var text = info.ReadAllText().Split('\r', '\n').Where(i => i.Trim() != "").Select(i => i.Replace("   ", "\t")).ToList();
 
-            var currentScenario = new List<string>();
-            var currentName = "";
+            var tests = new List<Tuple<string, List<string>>>();
 
-            for (var i = 0; i < text.Length; i++)
+            do
             {
-                var line = text[i];
+                var title = text.ElementAt(0);
+                var stepsToAdd = text.Skip(1).TakeWhile(i => i.StartsWith("\t")).Select(i => i.Trim()).ToList();
 
-                if (line.StartsWith("\n\t"))
-                {
-                    currentScenario.Add(line.TrimStart('\n', '\t'));
-                }
-                else
-                {
-                    if (line.Trim() == "")
-                        continue;
+                tests.Add(new Tuple<string, List<string>>(title, stepsToAdd));
 
-                    if (currentName != "")
-                    {
-                        scenarios.Add(new Tuple<string, List<string>>(currentName, currentScenario.ToList()));
-
-                        currentScenario.Clear();
-                    }
-
-                    currentName = line.Trim();
-                }
+                text = text.Skip(stepsToAdd.Count() + 1).ToList();
             }
+            while (text.Count > 0);
+ 
+            var code = Templates.Code;
 
-            scenarios.Add(new Tuple<string, List<string>>(currentName, currentScenario));
-            
-            var name = text[0];
+            var tree = CSharpSyntaxTree.ParseText(code);
 
-            var steps = text.Skip(1).Select(i => i.Trim()).Where(i => i != "");
+            var root = await tree.GetRootAsync().ConfigureAwait(false) as CompilationUnitSyntax;
 
-            var methCode = new List<string>
+            // Get the namespace declaration.
+            var oldNamespace = root.Members.Single(m => m is NamespaceDeclarationSyntax) as NamespaceDeclarationSyntax;
+
+            // Create a new namespace declaration.
+            var newNamespace = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(rootNameSpace)).NormalizeWhitespace();
+
+            var publicModifiers = SyntaxFactory.TokenList(new[] { SyntaxFactory.Token(SyntaxKind.PublicKeyword) });
+
+            var classDeclaration = SyntaxFactory.ClassDeclaration(info.Name.Replace(".feature", "")).WithModifiers(publicModifiers);
+
+            foreach (var test in tests)
             {
-                "using Microsoft.VisualStudio.TestTools.UnitTesting;",
-                "using System;",
+                var name = test.Item1;
+                var steps = test.Item2;
 
-                $"namespace {rootNameSpace} {{"
-            };
+                var methodToInsert = GetMethodDeclarationSyntax(returnTypeName: "void", methodName: name.ToCamelCase()).WithModifiers(publicModifiers);
 
-            var className = info.Name.Replace(".feature", "");
+                var methCode = new List<string>();
 
-            methCode.Add($"[TestClass]");
-            methCode.Add($"public class {className} {{");
-
-            foreach (var scenario in scenarios)
-            {
-                methCode.Add($"[TestMethod]");
-                methCode.Add($"public void {scenario.Item1.ToCamelCase()}() {{");
                 methCode.Add("var step = new Steps();");
 
-                foreach (var line in scenario.Item2.Select(i => GetStepCall(i)))
+                methCode = methCode.Concat(steps.Select(i =>
                 {
-                    methCode.Add(line);
+                    var replacements = new List<string> { "x", "y", "z", "i", "j" };
+
+                    MatchCollection matches;
+                    var count = 0;
+
+                    var args = new List<Tuple<string, string>>();
+
+                    do
+                    {
+                        matches = new Regex("['‘\"](.*?)['’\"]").Matches(i);
+
+                        if (matches.Count == 0)
+                            break;
+
+                        var firstGroup = matches[0];
+
+                        var val = firstGroup.Value;
+                        var replacement = replacements[count % replacements.Count];
+
+                        i = i.Replace(val, replacement);
+
+                        val = val.Trim('\'', '‘', '’', '"');
+
+                        args.Add(new Tuple<string, string>($"\"{val}\"", replacement));
+
+                        count++;
+                    }
+                    while (matches.Count > 0);
+
+                    var argStr = string.Join(",", args.Select(j => $"{j.Item2}: {j.Item1}"));
+
+                    var function = $"step.{i.ToCamelCase()}({argStr});".Trim();
+
+                    return function;
+                })).ToList();
+
+                foreach (var meth in methCode)
+                {
+                    methodToInsert = methodToInsert.AddBodyStatements(SyntaxFactory.ParseStatement(meth).NormalizeWhitespace());
                 }
 
-                methCode.Add($"}}");
+                methodToInsert = methodToInsert.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(
+                    SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("TestMethod")))));
+
+                classDeclaration = classDeclaration.AddMembers(methodToInsert);
             }
 
-            methCode.Add($"}}");
-            methCode.Add($"}}");
+            classDeclaration = classDeclaration.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(
+                SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("TestClass")))));
 
+            // Add the class declarations to the new namespace.
+            newNamespace = newNamespace.AddMembers(classDeclaration);
+
+            // Replace the oldNamespace with the newNamespace and normailize.
+            root = root.ReplaceNode(oldNamespace, newNamespace).NormalizeWhitespace();
+
+            string newCode = root.ToFullString();
+            
             var newFile = Path.ChangeExtension(info.FullName, ".feature.cs");
 
-            File.WriteAllText(newFile, string.Join(Environment.NewLine, methCode));
+            File.WriteAllText(newFile, newCode);
+        }
+
+        public static MethodDeclarationSyntax GetMethodDeclarationSyntax(string returnTypeName, string methodName, string[] parameterTypes = null, string[] paramterNames = null)
+        {
+            var parameterList = SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(GetParametersList(parameterTypes, paramterNames)));
+            return SyntaxFactory.MethodDeclaration(attributeLists: SyntaxFactory.List<AttributeListSyntax>(),
+                          modifiers: SyntaxFactory.TokenList(),
+                          returnType: SyntaxFactory.ParseTypeName(returnTypeName),
+                          explicitInterfaceSpecifier: null,
+                          identifier: SyntaxFactory.Identifier(methodName),
+                          typeParameterList: null,
+                          parameterList: parameterList,
+                          constraintClauses: SyntaxFactory.List<TypeParameterConstraintClauseSyntax>(),
+                          body: null,
+                          semicolonToken: SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+        }
+
+        private static IEnumerable<ParameterSyntax> GetParametersList(string[] parameterTypes, string[] paramterNames)
+        {
+            for (int i = 0; i < parameterTypes?.Length; i++)
+            {
+                yield return SyntaxFactory.Parameter(attributeLists: SyntaxFactory.List<AttributeListSyntax>(),
+                                                         modifiers: SyntaxFactory.TokenList(),
+                                                         type: SyntaxFactory.ParseTypeName(parameterTypes[i]),
+                                                         identifier: SyntaxFactory.Identifier(paramterNames[i]),
+                                                         @default: null);
+            }
         }
     }
 
