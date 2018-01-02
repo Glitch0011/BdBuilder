@@ -95,6 +95,9 @@ namespace BdBuilder
 
             var tests = new List<Tuple<string, List<string>>>();
 
+            if (text.Count == 0)
+                return;
+
             do
             {
                 var title = text.ElementAt(0);
